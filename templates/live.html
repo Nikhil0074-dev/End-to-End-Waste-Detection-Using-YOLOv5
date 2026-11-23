@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Live Detection - SORT.CV</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">♻</span>
+    <span class="brand-text">SORT<span class="brand-accent">.CV</span></span>
+  </div>
+  <nav class="topnav">
+    <a href="/">Scan</a>
+    <a href="/live" class="active">Live Feed</a>
+  </nav>
+</header>
+
+<main class="stage">
+  <section class="hero">
+    <p class="eyebrow">LIVE - webcam stream</p>
+    <h1>Point your camera. Sort in real time.</h1>
+    <p class="sub">Frames are captured from your webcam and sent to the same detector behind the /predict route, a few times a second.</p>
+  </section>
+
+  <section class="chute-panel">
+    <div class="chute" id="camWrap">
+      <video id="video" autoplay playsinline muted></video>
+      <img id="liveResult" class="preview-img" hidden>
+    </div>
+    <div class="chute-actions">
+      <button id="camToggle" class="scan-btn">Start camera</button>
+      <span id="liveStatus" class="status-tag">idle</span>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <span>wasteDetection / Flask · YOLOv5 · Docker</span>
+</footer>
+
+<script src="{{ url_for('static', filename='js/live.js') }}"></script>
+</body>
+</html>
