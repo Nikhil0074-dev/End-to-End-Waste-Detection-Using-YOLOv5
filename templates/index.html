@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Waste Detection - YOLOv5 Sorting Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="belt-track" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">♻</span>
+    <span class="brand-text">SORT<span class="brand-accent">.CV</span></span>
+  </div>
+  <nav class="topnav">
+    <a href="/" class="active">Scan</a>
+    <a href="/live">Live Feed</a>
+    <button id="trainBtn" class="nav-train">Train Model</button>
+  </nav>
+</header>
+
+<main class="stage">
+  <section class="hero">
+    <p class="eyebrow">MODEL - YOLOv5s · WASTE STREAM v1</p>
+    <h1>Drop it in the chute.<br>We'll tell you which bin.</h1>
+    <p class="sub">Upload a photo of an item and the detector draws bounding boxes around every recyclable, compostable, or landfill object it finds - glass, plastic, metal, paper, cardboard.</p>
+  </section>
+
+  <section class="chute-panel">
+    <div class="chute" id="dropzone">
+      <input type="file" id="fileInput" accept="image/*" hidden>
+      <div class="chute-inner" id="chuteInner">
+        <div class="chute-icon">▤</div>
+        <p class="chute-label">Drag an image here, or <span class="chute-link">browse</span></p>
+        <p class="chute-hint">JPG / PNG · single item works best</p>
+      </div>
+      <img id="previewImg" class="preview-img" hidden>
+    </div>
+
+    <div class="chute-actions">
+      <button id="scanBtn" class="scan-btn" disabled>Run detection</button>
+      <span id="statusTag" class="status-tag">idle</span>
+    </div>
+  </section>
+
+  <section class="result-panel" id="resultPanel" hidden>
+    <div class="result-head">
+      <p class="eyebrow">OUTPUT — scanned frame</p>
+      <h2>Detection result</h2>
+    </div>
+    <div class="result-img-wrap">
+      <img id="resultImg" alt="Detection result">
+    </div>
+  </section>
+
+  <section class="legend">
+    <p class="eyebrow">MATERIAL CLASSES</p>
+    <div class="legend-row">
+      <span class="chip chip-glass">Glass</span>
+      <span class="chip chip-plastic">Plastic</span>
+      <span class="chip chip-metal">Metal</span>
+      <span class="chip chip-paper">Paper</span>
+      <span class="chip chip-card">Cardboard</span>
+      <span class="chip chip-trash">Trash</span>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <span>wasteDetection / Flask · YOLOv5 · Docker</span>
+  <span id="trainStatus"></span>
+</footer>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
