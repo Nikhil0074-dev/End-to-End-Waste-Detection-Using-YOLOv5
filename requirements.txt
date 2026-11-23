@@ -1,0 +1,16 @@
+Flask
+Flask-Cors
+gunicorn
+gdown
+PyYAML
+numpy
+opencv-python-headless
+Pillow
+matplotlib
+torch
+torchvision
+pandas
+seaborn
+tqdm
+requests
+scipy
