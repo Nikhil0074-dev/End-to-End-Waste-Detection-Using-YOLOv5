@@ -1,81 +1,39 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Waste Detection - YOLOv5 Sorting Console</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
+const video = document.querySelector('#camera');
+const canvas = document.querySelector('#capture');
+const result = document.querySelector('#result');
+const start = document.querySelector('#start');
+const snap = document.querySelector('#snap');
+const stop = document.querySelector('#stop');
+const status = document.querySelector('#status');
+let stream;
 
-<div class="belt-track" aria-hidden="true"></div>
+start.addEventListener('click', async () => {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({video: {facingMode: 'environment'}, audio: false});
+    video.srcObject = stream;
+    start.disabled = true; snap.disabled = false; stop.disabled = false;
+    status.textContent = 'Camera is ready.';
+  } catch (_) { status.textContent = 'Camera permission or device is unavailable.'; }
+});
 
-<header class="topbar">
-  <div class="brand">
-    <span class="brand-mark">♻</span>
-    <span class="brand-text">SORT<span class="brand-accent">.CV</span></span>
-  </div>
-  <nav class="topnav">
-    <a href="/" class="active">Scan</a>
-    <a href="/live">Live Feed</a>
-    <button id="trainBtn" class="nav-train">Train Model</button>
-  </nav>
-</header>
+snap.addEventListener('click', async () => {
+  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  status.textContent = 'Running detection…'; snap.disabled = true;
+  try {
+    const response = await fetch('/predict', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({image: canvas.toDataURL('image/png')})});
+    const body = await response.json();
+    if (!response.ok) throw new Error(body.error || 'Detection failed.');
+    result.src = `data:image/png;base64,${body.image}`; result.hidden = false;
+    status.textContent = 'Detection complete.';
+  } catch (error) { status.textContent = error.message || 'Unable to contact the detection service.'; }
+  finally { snap.disabled = !stream; }
+});
 
-<main class="stage">
-  <section class="hero">
-    <p class="eyebrow">MODEL - YOLOv5s · WASTE STREAM v1</p>
-    <h1>Drop it in the chute.<br>We'll tell you which bin.</h1>
-    <p class="sub">Upload a photo of an item and the detector draws bounding boxes around every recyclable, compostable, or landfill object it finds - glass, plastic, metal, paper, cardboard.</p>
-  </section>
-
-  <section class="chute-panel">
-    <div class="chute" id="dropzone">
-      <input type="file" id="fileInput" accept="image/*" hidden>
-      <div class="chute-inner" id="chuteInner">
-        <div class="chute-icon">▤</div>
-        <p class="chute-label">Drag an image here, or <span class="chute-link">browse</span></p>
-        <p class="chute-hint">JPG / PNG · single item works best</p>
-      </div>
-      <img id="previewImg" class="preview-img" hidden>
-    </div>
-
-    <div class="chute-actions">
-      <button id="scanBtn" class="scan-btn" disabled>Run detection</button>
-      <span id="statusTag" class="status-tag">idle</span>
-    </div>
-  </section>
-
-  <section class="result-panel" id="resultPanel" hidden>
-    <div class="result-head">
-      <p class="eyebrow">OUTPUT — scanned frame</p>
-      <h2>Detection result</h2>
-    </div>
-    <div class="result-img-wrap">
-      <img id="resultImg" alt="Detection result">
-    </div>
-  </section>
-
-  <section class="legend">
-    <p class="eyebrow">MATERIAL CLASSES</p>
-    <div class="legend-row">
-      <span class="chip chip-glass">Glass</span>
-      <span class="chip chip-plastic">Plastic</span>
-      <span class="chip chip-metal">Metal</span>
-      <span class="chip chip-paper">Paper</span>
-      <span class="chip chip-card">Cardboard</span>
-      <span class="chip chip-trash">Trash</span>
-    </div>
-  </section>
-</main>
-
-<footer class="foot">
-  <span>wasteDetection / Flask · YOLOv5 · Docker</span>
-  <span id="trainStatus"></span>
-</footer>
-
-<script src="{{ url_for('static', filename='js/main.js') }}"></script>
-</body>
-</html>
+stop.addEventListener('click', () => {
+  stream?.getTracks().forEach(track => track.stop());
+  video.srcObject = null; stream = undefined;
+  start.disabled = false; snap.disabled = true; stop.disabled = true;
+  status.textContent = 'Camera stopped.';
+});
+window.addEventListener('pagehide', () => stream?.getTracks().forEach(track => track.stop()));
