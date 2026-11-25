@@ -1,39 +1,25 @@
-const video = document.querySelector('#camera');
-const canvas = document.querySelector('#capture');
-const result = document.querySelector('#result');
-const start = document.querySelector('#start');
-const snap = document.querySelector('#snap');
-const stop = document.querySelector('#stop');
-const status = document.querySelector('#status');
-let stream;
-
-start.addEventListener('click', async () => {
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({video: {facingMode: 'environment'}, audio: false});
-    video.srcObject = stream;
-    start.disabled = true; snap.disabled = false; stop.disabled = false;
-    status.textContent = 'Camera is ready.';
-  } catch (_) { status.textContent = 'Camera permission or device is unavailable.'; }
-});
-
-snap.addEventListener('click', async () => {
-  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-  canvas.getContext('2d').drawImage(video, 0, 0);
-  status.textContent = 'Running detection…'; snap.disabled = true;
-  try {
-    const response = await fetch('/predict', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({image: canvas.toDataURL('image/png')})});
-    const body = await response.json();
-    if (!response.ok) throw new Error(body.error || 'Detection failed.');
-    result.src = `data:image/png;base64,${body.image}`; result.hidden = false;
-    status.textContent = 'Detection complete.';
-  } catch (error) { status.textContent = error.message || 'Unable to contact the detection service.'; }
-  finally { snap.disabled = !stream; }
-});
-
-stop.addEventListener('click', () => {
-  stream?.getTracks().forEach(track => track.stop());
-  video.srcObject = null; stream = undefined;
-  start.disabled = false; snap.disabled = true; stop.disabled = true;
-  status.textContent = 'Camera stopped.';
-});
-window.addEventListener('pagehide', () => stream?.getTracks().forEach(track => track.stop()));
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Waste Detection</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <main class="shell">
+    <header><p class="eyebrow">COMPUTER VISION FOR RECYCLING</p><h1>Waste Detection System</h1>
+      <p>Upload an image to detect glass, plastic, metal, paper, cardboard, and trash.</p>
+      <a href="{{ url_for('live') }}">Use webcam instead →</a></header>
+    <section class="panel">
+      <label class="drop" for="image-file"><span>Choose an image</span><small>PNG, JPEG, or WebP · up to 10 MB</small></label>
+      <input id="image-file" type="file" accept="image/png,image/jpeg,image/webp">
+      <div class="actions"><button id="detect" disabled>Detect waste</button><span id="status" role="status"></span></div>
+      <div class="results"><figure><figcaption>Selected image</figcaption><img id="preview" alt="Selected image preview" hidden></figure>
+        <figure><figcaption>Detection result</figcaption><img id="result" alt="Annotated detection result" hidden></figure></div>
+    </section>
+    <footer>Prototype only. Predictions may be incorrect and are not disposal guidance.</footer>
+  </main>
+  <script src="{{ url_for('static', filename='js/upload.js') }}" defer></script>
+</body>
+</html>
