@@ -1,0 +1,10 @@
+nc: 6
+names:
+  - glass
+  - plastic
+  - metal
+  - paper
+  - cardboard
+  - trash
+train: images/train
+val: images/val
