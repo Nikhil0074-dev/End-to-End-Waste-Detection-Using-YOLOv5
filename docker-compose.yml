@@ -1,0 +1,18 @@
+services:
+  waste-detection:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MODEL_PATH: /app/model/my_model.pt
+      YOLOV5_DIR: /app/yolov5
+      DATASET_DIR: /app/artifacts/datasets/waste
+      DATA_YAML: /app/data.yaml
+    volumes:
+      - ./model:/app/model:ro
+      - ./yolov5:/app/yolov5:ro
+      - ./artifacts:/app/artifacts
+    restart: unless-stopped
